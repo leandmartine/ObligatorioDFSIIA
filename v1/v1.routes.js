@@ -8,6 +8,8 @@ import categoriaRouter from "./routes/categoria.routes.js";
 const router = express.Router({mergeParams:true});
 
 router.use("/auth", authRouter);
+router.use("/ai", aiRouter);
+router.use("/uploads", uploadsRouter);
 
 
 router.use(authenticateToken);

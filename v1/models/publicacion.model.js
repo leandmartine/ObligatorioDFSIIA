@@ -9,37 +9,35 @@ const publicacionSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  tipoOferta: {
-    type: String,
-    enum: ["venta", "permuta", "gratis"],
+  aceptaPermuta: {
+    type: Boolean,
     required: true,
   },
   precio: {
     type: Number,
     required: true,
   },
-  moneda:{
-    type: String,
-    enum: ["USD", "UYU"],
+  // si es false, es en dolares, si es true, es en pesos uruguayos
+  pesosUy:{
+    type: Boolean,
     required: true,
   },
-  alcance:{
-    type: String,
-    enum: ["estudiante", "profesor", "trabajador", "graduado"],
+  alcance: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "roles",
     required: true,
-  },
+  }],
   cantidad: {
     type: Number,
     required: true,
   },
-  estadoItem: {
-    type: String,
-    enum: ["nuevo", "usado", "como_nuevo"],
+  nuevo: {
+    type: Boolean,
     required: true,
   },
   estadoPublicacion: {
-    type: String,
-    enum: ["pendiente", "publicada", "rechazada", "vendida"],
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "EstadoPublicacion",
     required: true,
   },
   categoria: {
@@ -54,6 +52,10 @@ const publicacionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Usuario",
     required: true,
+  },
+  activa: {
+    type: Boolean,
+    default: true,
   },
 }, { timestamps: true });
 

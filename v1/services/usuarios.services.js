@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Usuario from "../models/usuario.model.js";
+import RolesColeccion from "../models/rolesColeccion.model.js";
 import { isValidObjectId } from "mongoose";
 
 export const obtenerUsuariosService = async (busqueda = {}) => {
@@ -14,7 +15,8 @@ export const obtenerUsuarioService = async (id) => {
       errorId.status = 400;
       throw errorId;
   }
-  const usuario = await Usuario.findById(id);
+  const usuarios = await Usuario.find({ _id: id, activo: true });
+  const usuario = usuarios[0];
   if (!usuario) {
       const errorNotFound = new Error("Usuario no encontrado");
       errorNotFound.status = 404;
@@ -24,6 +26,22 @@ export const obtenerUsuarioService = async (id) => {
 }
 
 export const crearUsuarioService = async (usuarioData) => {
+    if (!isValidObjectId(usuarioData.role)) {
+        const errorId = new Error("El id del rol no es válido");
+        errorId.status = 400;
+        throw errorId;
+    }
+
+    const rol = await RolesColeccion.findOne({
+        _id: usuarioData.role,
+        activo: true,
+    });
+    if (!rol) {
+        const errorNotFound = new Error("El rol no existe o está inactivo");
+        errorNotFound.status = 400;
+        throw errorNotFound;
+    }
+
     const nuevoUsuario = new Usuario(usuarioData);
     await nuevoUsuario.save();
     return nuevoUsuario;
@@ -52,4 +70,3 @@ export const eliminarUsuarioService = async (id) => {
     return usuarioEliminado;
     
 }
-

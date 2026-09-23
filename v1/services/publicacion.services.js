@@ -13,7 +13,8 @@ export const obtenerPublicacionService = async (id) => {
       errorId.status = 400;
       throw errorId;
   }
-  const publicacion = await Publicacion.findById(id);
+  const publicaciones = await Publicacion.find({ _id: id, activa: true });
+  const publicacion = publicaciones[0];
   if (!publicacion) {
       const errorNotFound = new Error("Publicación no encontrada");
       errorNotFound.status = 404;
