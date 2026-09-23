@@ -1,3 +1,4 @@
+import { required } from "joi";
 import mongoose from "mongoose";
 
 const usuarioSchema = new mongoose.Schema({
@@ -16,23 +17,29 @@ const usuarioSchema = new mongoose.Schema({
     required: true,
     select: false,
   },
-  perfil: {
-    type: String,
-    enum: ["usuario", "admin"],
-    default: "usuario",
+  esAdmin: {
+    type: boolean,
+    required: true,
   },
-  rolComunidad: {
-    type: String,
-    enum: ["estudiante", "profesor", "trabajador", "graduado"],
+  role: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "roles",
+    required: true,
   },
-  plan: {
-    type: String,
-    enum: ["plus", "premium"],
+  esPremium: {
+    type: Boolean,
+    required: true,
+
+    default: false,
   },
   puedeModerar: {
     type: Boolean,
     default: false,
   },
+  publicaciones: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Publicacion",
+  }],
   activo: {
     type: Boolean,
     default: true,

@@ -13,7 +13,8 @@ export const obtenerCategoriaService = async (id) => {
     errorId.status = 400;
     throw errorId;
   }
-  const categoria = await Categoria.findById(id);
+  const categorias = await Categoria.find({ _id: id, activa: true });
+  const categoria = categorias[0];
   if (!categoria) {
     const errorNotFound = new Error("Categoría no encontrada");
     errorNotFound.status = 404;

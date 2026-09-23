@@ -7,6 +7,8 @@ export const createCategoriaSchema = Joi.object({
     "string.max": "El nombre de la categoría no puede tener más de {max} caracteres",
   }),
   descripcion: Joi.string().optional(),
-  rolesPermitidos: Joi.array().items(Joi.string().valid(
-    "estudiante", "profesor", "trabajador", "graduado")).optional(),
+  rolesPermitidos: Joi.string().required().messages({
+    "any.only": "El alcance debe ser 'estudiante', 'profesor', 'trabajador' o 'graduado'",
+    "string.empty": "El alcance es obligatorio",
+  }),
 });

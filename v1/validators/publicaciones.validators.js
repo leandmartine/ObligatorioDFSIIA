@@ -10,20 +10,20 @@ export const createPublicacionSchema = Joi.object({
     "string.empty": "La descripción de la publicación es obligatoria",
     "string.min": "La descripción de la publicación debe tener al menos {min} caracteres",
   }),
-  tipoOferta: Joi.string().valid("venta", "permuta", "gratis").required().messages({
-    "any.only": "El tipo de oferta debe ser 'venta', 'permuta' o 'gratis'",
-    "string.empty": "El tipo de oferta es obligatorio",
+  aceptaPermuta: Joi.boolean().required().messages({
+    "boolean.base": "El campo 'aceptaPermuta' debe ser un valor booleano",
+    "any.required": "El campo 'aceptaPermuta' es obligatorio",
   }),
   precio: Joi.number().required().min(0).messages({
     "number.base": "El precio debe ser un número",
     "number.min": "El precio no puede ser negativo",
     "any.required": "El precio es obligatorio",
   }),
-  moneda: Joi.string().valid("USD", "UYU").required().messages({
-    "any.only": "La moneda debe ser 'USD' o 'UYU'",
-    "string.empty": "La moneda es obligatoria",
+  moneda: Joi.boolean().required().messages({
+    "boolean.base": "El campo 'moneda' debe ser un valor booleano",
+    "any.required": "El campo 'moneda' es obligatorio",
   }),
-  alcance: Joi.string().valid("estudiante", "profesor", "trabajador", "graduado").required().messages({
+  alcance: Joi.string().required().messages({
     "any.only": "El alcance debe ser 'estudiante', 'profesor', 'trabajador' o 'graduado'",
     "string.empty": "El alcance es obligatorio",
   }),
@@ -32,11 +32,11 @@ export const createPublicacionSchema = Joi.object({
     "number.min": "La cantidad debe ser al menos {min}",
     "any.required": "La cantidad es obligatoria",
   }),
-  estadoItem: Joi.string().valid("nuevo", "usado", "como_nuevo").required().messages({
-    "any.only": "El estado del ítem debe ser 'nuevo', 'usado' o 'como_nuevo'",
-    "string.empty": "El estado del ítem es obligatorio",
+  nuevo: Joi.boolean().required().messages({
+    "boolean.base": "El campo 'nuevo' debe ser un valor booleano",
+    "any.required": "El campo 'nuevo' es obligatorio",
   }),
-  estadoPublicacion: Joi.string().valid("pendiente", "publicada", "rechazada", "vendida").required().messages({
+  estadoPublicacion: Joi.string().required().messages({
     "any.only": "El estado de la publicación debe ser 'pendiente', 'publicada', 'rechazada' o 'vendida'",
     "string.empty": "El estado de la publicación es obligatorio",
   }),
