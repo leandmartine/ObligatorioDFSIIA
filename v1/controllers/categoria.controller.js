@@ -1,7 +1,13 @@
-import { obtenerCategoriasService, obtenerCategoriaService, crearCategoriaService, eliminarCategoriaService } from "../services/categoria.services.js";
+import {
+    obtenerCategoriasService,
+    obtenerCategoriaService,
+    crearCategoriaService,
+    actualizarCategoriaService,
+    eliminarCategoriaService,
+} from "../services/categoria.services.js";
 
 export const obtenerCategorias = async (req, res) => {
-    const busqueda = req.query; //{activa:true}
+    const busqueda = req.query;
     const categorias = await obtenerCategoriasService(busqueda);
     res.status(200).json({ categorias });
 }
@@ -16,6 +22,13 @@ export const crearCategoria = async (req, res) => {
     const categoriaData = req.validatedBody;
     const nuevaCategoria = await crearCategoriaService(categoriaData);
     res.status(201).json({ nuevaCategoria });
+}
+
+export const actualizarCategoria = async (req, res) => {
+    const { id } = req.params;
+    const categoriaData = req.validatedBody;
+    const categoriaActualizada = await actualizarCategoriaService(id, categoriaData);
+    res.status(200).json({ categoriaActualizada });
 }
 
 export const eliminarCategoria = async (req, res) => {

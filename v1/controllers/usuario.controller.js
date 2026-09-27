@@ -2,7 +2,7 @@ import {obtenerUsuariosService, crearUsuarioService, obtenerUsuarioService,
     actualizarUsuarioService, eliminarUsuarioService} from "../services/usuarios.services.js";
 
 export const obtenerUsuarios = async (req, res) => {
-    const busqueda = req.query//{activo:true
+    const busqueda = req.query;
     const usuarios = await obtenerUsuariosService(busqueda);
     res.status(200).json({ usuarios });
 }
@@ -22,6 +22,13 @@ export const crearUsuario = async (req, res) => {
 export const actualizarUsuario = async (req, res) => {
     const { id } = req.params;
     const usuarioData = req.validatedBody;
+    const usuarioActualizado = await actualizarUsuarioService(id, usuarioData);
+    res.status(200).json({ usuarioActualizado });
+} 
+
+export const altaUsuarioPremium = async (req, res) => {
+    const { id } = req.params;
+    const usuarioData = { esPremium: true };
     const usuarioActualizado = await actualizarUsuarioService(id, usuarioData);
     res.status(200).json({ usuarioActualizado });
 } 

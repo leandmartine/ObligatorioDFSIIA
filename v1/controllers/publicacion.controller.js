@@ -1,7 +1,7 @@
 import { obtenerPublicacionesService, obtenerPublicacionService, crearPublicacionService, actualizarPublicacionService, eliminarPublicacionService } from "../services/publicacion.services.js";
 
 export const obtenerPublicaciones = async (req, res) => {
-    const busqueda = req.query; //{activa:true}
+    const busqueda = req.query;
     const publicaciones = await obtenerPublicacionesService(busqueda);
     res.status(200).json({ publicaciones });
 }

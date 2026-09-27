@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import Usuario from "../models/usuario.model.js";
-import RolesColeccion from "../models/rolesColeccion.model.js";
+import RolesColeccion from "../models/roles.model.js";
 import { isValidObjectId } from "mongoose";
 
 export const obtenerUsuariosService = async (busqueda = {}) => {
@@ -26,14 +26,8 @@ export const obtenerUsuarioService = async (id) => {
 }
 
 export const crearUsuarioService = async (usuarioData) => {
-    if (!isValidObjectId(usuarioData.role)) {
-        const errorId = new Error("El id del rol no es válido");
-        errorId.status = 400;
-        throw errorId;
-    }
-
     const rol = await RolesColeccion.findOne({
-        _id: usuarioData.role,
+        nombre: usuarioData.role.trim(),
         activo: true,
     });
     if (!rol) {
@@ -42,12 +36,28 @@ export const crearUsuarioService = async (usuarioData) => {
         throw errorNotFound;
     }
 
-    const nuevoUsuario = new Usuario(usuarioData);
+    const nuevoUsuario = new Usuario({
+        ...usuarioData,
+        role: rol._id,
+    });
     await nuevoUsuario.save();
     return nuevoUsuario;
 }
 
 export const actualizarUsuarioService = async (id, usuarioData) => {
+    if (usuarioData.role !== undefined) {
+        const rol = await RolesColeccion.findOne({
+            nombre: usuarioData.role.trim(),
+            activo: true,
+        });
+        if (!rol) {
+            const errorNotFound = new Error("El rol no existe o está inactivo");
+            errorNotFound.status = 400;
+            throw errorNotFound;
+        }
+        usuarioData = { ...usuarioData, role: rol._id };
+    }
+
     const usuarioActualizado = await Usuario.findByIdAndUpdate(id,
         usuarioData, { returnDocument: 'after' });
     return usuarioActualizado;
