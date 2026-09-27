@@ -1,4 +1,3 @@
-import { required } from "joi";
 import mongoose from "mongoose";
 
 const usuarioSchema = new mongoose.Schema({
@@ -18,7 +17,7 @@ const usuarioSchema = new mongoose.Schema({
     select: false,
   },
   esAdmin: {
-    type: boolean,
+    type: Boolean,
     required: true,
   },
   role: {
@@ -29,7 +28,6 @@ const usuarioSchema = new mongoose.Schema({
   esPremium: {
     type: Boolean,
     required: true,
-
     default: false,
   },
   puedeModerar: {
@@ -47,4 +45,3 @@ const usuarioSchema = new mongoose.Schema({
 }, { timestamps: true }); 
 
 export default mongoose.model("Usuario", usuarioSchema);
-

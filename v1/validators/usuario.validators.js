@@ -1,10 +1,11 @@
 import Joi from "joi";
 
 export const createUsuarioSchema = Joi.object({
-  username: Joi.string().required().min(3).max(30).messages({
+  name: Joi.string().trim().required().min(3).max(30).messages({
     "string.empty": "El nombre es obligatorio",
-    "string.min": "El nombre de usuario debe tener al menos {#limit} caracteres",
-    "string.max": "El nombre de usuario no puede tener más de {#limit} caracteres",
+    "any.required": "El nombre es obligatorio",
+    "string.min": "El nombre debe tener al menos {#limit} caracteres",
+    "string.max": "El nombre no puede tener más de {#limit} caracteres",
   }),
   email: Joi.string().email().required().messages({
     "string.email": "El email debe ser una dirección de correo válida",
@@ -13,34 +14,42 @@ export const createUsuarioSchema = Joi.object({
   }),
   password: Joi.string().required().min(6).messages({
     "string.empty": "La contraseña es obligatoria",
-    "string.min": "La contraseña debe tener al menos {min} caracteres",
+    "string.min": "La contraseña debe tener al menos {#limit} caracteres",
   }),
-  role: Joi.string().hex().length(24).required().messages({
+  esAdmin: Joi.boolean().required().messages({
+    "boolean.base": "El campo esAdmin debe ser un valor booleano",
+    "any.required": "El campo esAdmin es obligatorio",
+  }),
+  role: Joi.string().trim().min(2).max(50).required().messages({
     "any.required": "El rol es obligatorio",
-    "string.hex": "El rol debe ser un ObjectId válido",
-    "string.length": "El rol debe ser un ObjectId válido",
+    "string.empty": "El rol es obligatorio",
+    "string.min": "El rol debe tener al menos {#limit} caracteres",
+    "string.max": "El rol no puede tener más de {#limit} caracteres",
   }),
 });
 
 export const updateUsuarioSchema = Joi.object({
-  username: Joi.string().min(3).max(30).messages({
-    "string.min": "El nombre de usuario debe tener al menos {min} caracteres",
-    "string.max": "El nombre de usuario no puede tener más de {max} caracteres",
+  name: Joi.string().trim().min(3).max(30).messages({
+    "string.min": "El nombre debe tener al menos {#limit} caracteres",
+    "string.max": "El nombre no puede tener más de {#limit} caracteres",
   }),
-  email: Joi.string().email().messages({
+  email: Joi.string().email().required().messages({
     "string.email": "El email debe ser una dirección de correo válida",
+    "string.empty": "El email es obligatorio",
+    "any.required": "El email es obligatorio",
   }),
   password: Joi.string().min(6).messages({
-    "string.min": "La contraseña debe tener al menos {min} caracteres",
+    "string.min": "La contraseña debe tener al menos {#limit} caracteres",
   }),
   esAdmin: Joi.boolean().messages({
     "boolean.base": "El campo esAdmin debe ser un valor booleano",
   }),
-  rolComunidad: Joi.string().required().messages({
-    "any.only": "El rol de la comunidad debe ser 'estudiante', 'profesor', 'trabajador' o 'graduado'",
+  role: Joi.string().trim().min(2).max(50).messages({
+    "string.min": "El rol debe tener al menos {#limit} caracteres",
+    "string.max": "El rol no puede tener más de {#limit} caracteres",
   }),
-  esPremium: Joi.boolean().valid("plus", "premium").messages({
-    "any.only": "El plan debe ser 'plus' o 'premium'",
+  esPremium: Joi.boolean().messages({
+    "boolean.base": "El campo esPremium debe ser un valor booleano",
   }),
   puedeModerar: Joi.boolean().messages({
     "boolean.base": "El campo puedeModerar debe ser un valor booleano",
@@ -59,3 +68,10 @@ export const updateUsuarioSchema = Joi.object({
     "string.empty": "La contraseña es obligatoria",
   }),
 }); 
+
+export const altaUsuarioPremiumSchema = Joi.object({
+  esPremium: Joi.boolean().required().messages({
+    "boolean.base": "El campo 'esPremium' debe ser un valor booleano",
+    "any.required": "El campo 'esPremium' es obligatorio",
+  }),
+});

@@ -12,7 +12,7 @@ const rolesSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    activo: {
+    activa: {
       type: Boolean,
       default: true,
     },
