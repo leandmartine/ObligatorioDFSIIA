@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import Usuario from "../models/usuario.model.js";
 import RolesColeccion from "../models/roles.model.js";
+import { sendWelcomeEmail } from "../services/email.services.js";
 
 export const login = async (req, res, next) => {
   const { email, password } = req.validatedBody;
@@ -35,7 +36,7 @@ export const login = async (req, res, next) => {
 };
 
 export const register = async (req, res) => {
-  const { name, email, password, esAdmin, puedeModerar, role } =
+  const { name, phone, email, password, esAdmin, puedeModerar, role } =
     req.validatedBody;
   const userFound = await Usuario.findOne({ email });
   if (userFound) {
@@ -56,14 +57,16 @@ export const register = async (req, res) => {
     password,
     Number(process.env.SALTING_ROUNDS),
   );
-  await Usuario.create({
+  const usuarioCreado = await Usuario.create({
     name,
     email,
+    phone,
     password: hashedPassword,
     esAdmin,
     puedeModerar: puedeModerar ?? false,
     role: roleFound._id,
   });
+  await sendWelcomeEmail({ name: usuarioCreado.name, email: usuarioCreado.email });
 
   const token = jwt.sign(
     {

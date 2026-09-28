@@ -13,7 +13,8 @@
     "mongo": "^0.1.0",
     "mongoose": "^9.10.1",
     "multer": "^2.4.0",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "resend": "^6.30.0"
   },
   "name": "obligatorioDFSIIA",
   "version": "1.0.0",

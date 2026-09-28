@@ -4,6 +4,7 @@ import RolesColeccion from "../models/roles.model.js";
 import EstadoPublicacion from "../models/estadoPublicacion.model.js";
 import Categoria from "../models/categoria.model.js";
 import { isValidObjectId } from "mongoose";
+import { sendPublicationReceivedEmail } from "./email.services.js";
 
 export const obtenerPublicacionesService = async (busqueda = {}) => {
   const publicaciones = await Publicacion.find({ ...busqueda, activa: true });
@@ -97,6 +98,19 @@ export const crearPublicacionService = async (publicacionData) => {
     categoria: categoria._id,
   });
   await nuevaPublicacion.save();
+
+  await sendPublicationReceivedEmail({
+    name: usuario.name,
+    email: usuario.email,
+    publication: {
+      titulo: nuevaPublicacion.titulo,
+      descripcion: nuevaPublicacion.descripcion,
+      categoria: categoria.nombre,
+      precio: nuevaPublicacion.precio,
+      pesosUy: nuevaPublicacion.pesosUy,
+      estadoPublicacion: estadoPublicacion.nombre,
+    },
+  });
 
   return nuevaPublicacion;
 };
