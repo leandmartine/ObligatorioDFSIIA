@@ -22,19 +22,19 @@ export const crearUsuario = async (req, res) => {
 export const actualizarUsuario = async (req, res) => {
     const { id } = req.params;
     const usuarioData = req.validatedBody;
-    const usuarioActualizado = await actualizarUsuarioService(id, usuarioData);
+    const usuarioActualizado = await actualizarUsuarioService(id, usuarioData, req.user);
     res.status(200).json({ usuarioActualizado });
 } 
 
 export const altaUsuarioPremium = async (req, res) => {
     const { id } = req.params;
     const usuarioData = { esPremium: true };
-    const usuarioActualizado = await actualizarUsuarioService(id, usuarioData);
+    const usuarioActualizado = await actualizarUsuarioService(id, usuarioData, req.user);
     res.status(200).json({ usuarioActualizado });
 } 
 
 export const eliminarUsuario = async (req, res) => {
     const { id } = req.params;
-    const usuarioEliminado = await eliminarUsuarioService(id);
+    const usuarioEliminado = await eliminarUsuarioService(id, req.user);
     res.status(200).json({ usuarioEliminado });
 }

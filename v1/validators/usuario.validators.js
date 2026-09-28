@@ -26,6 +26,16 @@ export const createUsuarioSchema = Joi.object({
     "string.min": "El rol debe tener al menos {#limit} caracteres",
     "string.max": "El rol no puede tener más de {#limit} caracteres",
   }),
+  phone: Joi.number().required().messages({
+    "number.base": "El teléfono debe ser un número",
+    "any.required": "El teléfono es obligatorio",
+  }),
+  esPremium: Joi.boolean().messages({
+    "boolean.base": "El campo esPremium debe ser un valor booleano",
+  }),
+  puedeModerar: Joi.boolean().messages({
+    "boolean.base": "El campo puedeModerar debe ser un valor booleano",
+  }),
 });
 
 export const updateUsuarioSchema = Joi.object({
