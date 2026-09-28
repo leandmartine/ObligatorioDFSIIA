@@ -21,12 +21,16 @@ export const crearPublicacion = async (req, res) => {
 export const actualizarPublicacion = async (req, res) => {
     const { id } = req.params;
     const publicacionData = req.validatedBody;
-    const publicacionActualizada = await actualizarPublicacionService(id, publicacionData);
+    const publicacionActualizada = await actualizarPublicacionService(
+        id,
+        publicacionData,
+        req.user,
+    );
     res.status(200).json({ publicacionActualizada });
 }
 
 export const eliminarPublicacion = async (req, res) => {
     const { id } = req.params;
-    await eliminarPublicacionService(id);
-    res.status(200).json({ message: "Publicación eliminada" });
+    const publicacionEliminada = await eliminarPublicacionService(id, req.user);
+    res.status(200).json({ publicacionEliminada });
 }

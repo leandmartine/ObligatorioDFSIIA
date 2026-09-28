@@ -11,6 +11,10 @@ const usuarioSchema = new mongoose.Schema({
     unique: true,
     
   },
+    phone: {
+    type: Number,
+    required: true,
+  },
   password: {
     type: String,
     required: true,

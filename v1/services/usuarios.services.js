@@ -1,13 +1,27 @@
-import mongoose from "mongoose";
 import Usuario from "../models/usuario.model.js";
+import Publicacion from "../models/publicacion.model.js";
 import RolesColeccion from "../models/roles.model.js";
 import { isValidObjectId } from "mongoose";
 
+const validarPermisoSobreUsuario = (usuario, usuarioSolicitante) => {
+    const esAdministrador = usuarioSolicitante?.esAdmin === true;
+    const esMismoUsuario = usuarioSolicitante?.email === usuario.email;
+
+    if (!esAdministrador && !esMismoUsuario) {
+        const errorPermiso = new Error("No es posible realizar la acción sobre otro usuario");
+        errorPermiso.status = 403;
+        throw errorPermiso;
+    }
+};
+
 export const obtenerUsuariosService = async (busqueda = {}) => {
-    const usuarios = await Usuario.find({ ...busqueda, activo: true });
+    const usuarios = await Usuario.find(
+        { ...busqueda, activo: true },
+        "name email phone esAdmin esPremium puedeModerar role publicaciones",
+    )
+        .populate("role", "nombre");
     return usuarios;
 }
-
 
 export const obtenerUsuarioService = async (id) => {
   if (!isValidObjectId(id)) {
@@ -15,7 +29,11 @@ export const obtenerUsuarioService = async (id) => {
       errorId.status = 400;
       throw errorId;
   }
-  const usuarios = await Usuario.find({ _id: id, activo: true });
+  const usuarios = await Usuario.find(
+      { _id: id, activo: true },
+      "name email phone esAdmin esPremium puedeModerar role publicaciones",
+  )
+      .populate("role", "nombre");
   const usuario = usuarios[0];
   if (!usuario) {
       const errorNotFound = new Error("Usuario no encontrado");
@@ -44,7 +62,21 @@ export const crearUsuarioService = async (usuarioData) => {
     return nuevoUsuario;
 }
 
-export const actualizarUsuarioService = async (id, usuarioData) => {
+export const actualizarUsuarioService = async (id, usuarioData, usuarioSolicitante) => {
+    if (!isValidObjectId(id)) {
+        const errorId = new Error("El id del usuario no es válido");
+        errorId.status = 400;
+        throw errorId;
+    }
+
+    const usuario = await Usuario.findById(id);
+    if (!usuario) {
+        const errorNotFound = new Error("Usuario no encontrado");
+        errorNotFound.status = 404;
+        throw errorNotFound;
+    }
+    validarPermisoSobreUsuario(usuario, usuarioSolicitante);
+
     if (usuarioData.role !== undefined) {
         const rol = await RolesColeccion.findOne({
             nombre: usuarioData.role.trim(),
@@ -59,24 +91,39 @@ export const actualizarUsuarioService = async (id, usuarioData) => {
     }
 
     const usuarioActualizado = await Usuario.findByIdAndUpdate(id,
-        usuarioData, { returnDocument: 'after' });
+        usuarioData, { returnDocument: "after" });
     return usuarioActualizado;
 }
 
-export const eliminarUsuarioService = async (id) => {
+export const eliminarUsuarioService = async (id, usuarioSolicitante) => {
     if (!isValidObjectId(id)) {
         const errorId = new Error("El id del usuario no es válido");
         errorId.status = 400;
         throw errorId;
     }
-    
-    const usuarioEliminado = await Usuario.findByIdAndDelete(id);
-    if(!usuarioEliminado) {
+
+    const usuario = await Usuario.findById(id);
+    if (!usuario) {
         const errorNotFound = new Error("Usuario no encontrado");
         errorNotFound.status = 404;
         throw errorNotFound;
     }
 
-    return usuarioEliminado;
-    
+    validarPermisoSobreUsuario(usuario, usuarioSolicitante);
+
+    const publicacionesActivas = await Publicacion.countDocuments({
+        autor: id,
+        activa: true,
+    });
+    if (publicacionesActivas > 0) {
+        const errorPublicacionesActivas = new Error(
+            "No es posible dar de baja al usuario porque tiene publicaciones activas",
+        );
+        errorPublicacionesActivas.status = 409;
+        throw errorPublicacionesActivas;
+    }
+
+    usuario.activo = false;
+    await usuario.save();
+    return usuario;
 }

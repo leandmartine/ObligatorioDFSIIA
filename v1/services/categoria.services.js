@@ -120,5 +120,7 @@ export const eliminarCategoriaService = async (id) => {
     throw error;
   }
 
-  await Categoria.findByIdAndUpdate(id, { activa: false });
+  categoria.activa = false;
+  await categoria.save();
+  return categoria;
 };

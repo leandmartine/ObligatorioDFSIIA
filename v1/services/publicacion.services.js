@@ -101,12 +101,52 @@ export const crearPublicacionService = async (publicacionData) => {
   return nuevaPublicacion;
 };
 
-export const actualizarPublicacionService = async (id, publicacionData) => {
+const validarPermisoSobrePublicacion = async (
+  publicacion,
+  usuarioSolicitante,
+  accion,
+) => {
+  const usuarioAutor = await Usuario.findById(publicacion.autor, "email");
+  const usuarioActual = await Usuario.findOne(
+    { email: usuarioSolicitante?.email, activo: true },
+    "email esAdmin puedeModerar",
+  );
+
+  const esAutor = usuarioAutor?.email === usuarioActual?.email;
+  const esAdministrador = usuarioActual?.esAdmin === true;
+  const esModerador = usuarioActual?.puedeModerar === true;
+  const puedeRealizarAccion =
+    esAutor ||
+    esAdministrador ||
+    (accion === "editar" && esModerador);
+
+  if (!puedeRealizarAccion) {
+    const errorPermiso = new Error(
+      "No es posible realizar la acción sobre la publicación de otro usuario",
+    );
+    errorPermiso.status = 403;
+    throw errorPermiso;
+  }
+};
+
+export const actualizarPublicacionService = async (
+  id,
+  publicacionData,
+  usuarioSolicitante,
+) => {
   if (!isValidObjectId(id)) {
     const errorId = new Error("El id de la publicación no es válido");
     errorId.status = 400;
     throw errorId;
   }
+
+  const publicacion = await Publicacion.findById(id);
+  if (!publicacion) {
+    const errorNotFound = new Error("Publicación no encontrada");
+    errorNotFound.status = 404;
+    throw errorNotFound;
+  }
+  await validarPermisoSobrePublicacion(publicacion, usuarioSolicitante, "editar");
 
   const datosActualizados = { ...publicacionData };
 
@@ -180,18 +220,23 @@ export const actualizarPublicacionService = async (id, publicacionData) => {
   return publicacionActualizada;
 };
 
-export const eliminarPublicacionService = async (id) => {
+export const eliminarPublicacionService = async (id, usuarioSolicitante) => {
   if (!isValidObjectId(id)) {
     const errorId = new Error("El id de la publicación no es válido");
     errorId.status = 400;
     throw errorId;
   }
-  const publicacionEliminada = await Publicacion.findByIdAndDelete(id);
-  if (!publicacionEliminada) {
+
+  const publicacion = await Publicacion.findById(id);
+  if (!publicacion) {
     const errorNotFound = new Error("Publicación no encontrada");
     errorNotFound.status = 404;
     throw errorNotFound;
   }
 
-  return publicacionEliminada;
+  await validarPermisoSobrePublicacion(publicacion, usuarioSolicitante, "eliminar");
+
+  publicacion.activa = false;
+  await publicacion.save();
+  return publicacion;
 };

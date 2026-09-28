@@ -8,13 +8,10 @@ export const authorizeRoles = (roles) => {
 };
 
 export const authorizeAdmin = (req, res, next) => {
-  const esAdministrador =
-    req.user?.esAdmin === true ||
-    req.user?.role === "administrador" ||
-    req.user?.role === "admin";
+  const esAdministrador = req.user.esAdmin === true
 
   if (!esAdministrador) {
-    return res.status(403).json({ message: "Solo un administrador puede dar de baja categorías" });
+    return res.status(403).json({ message: "Solo un administrador puede realizar esta acción" });
   }
 
   next();
