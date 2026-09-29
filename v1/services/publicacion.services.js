@@ -34,9 +34,15 @@ export const obtenerPublicacionService = async (id) => {
   return publicacion;
 };
 
-export const crearPublicacionService = async (publicacionData) => {
+export const crearPublicacionService = async (publicacionData, autorEmail) => {
+  if (!autorEmail) {
+    const error = new Error("El token no contiene el email del autor");
+    error.status = 401;
+    throw error;
+  }
+
   const usuario = await Usuario.findOne({
-    email: publicacionData.autor.trim(),
+    email: autorEmail,
     activo: true,
   });
   const LIMITE_PUBLICACIONES_NO_PREMIUM = 4;
@@ -223,19 +229,6 @@ export const actualizarPublicacionService = async (
       throw error;
     }
     datosActualizados.categoria = categoria._id;
-  }
-
-  if (datosActualizados.autor !== undefined) {
-    const autor = await Usuario.findOne({
-      email: datosActualizados.autor.trim(),
-      activo: true,
-    });
-    if (!autor) {
-      const error = new Error("El autor no existe o está inactivo");
-      error.status = 400;
-      throw error;
-    }
-    datosActualizados.autor = autor._id;
   }
 
   const publicacionActualizada = await Publicacion.findByIdAndUpdate(

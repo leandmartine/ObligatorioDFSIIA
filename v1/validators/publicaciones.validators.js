@@ -1,13 +1,20 @@
 import Joi from "joi";
 
 export const createPublicacionSchema = Joi.object({
+  usoIA: Joi.boolean().optional().default(false).messages({
+    "boolean.base": "El campo 'usoIA' debe ser un valor booleano",
+  }),
   titulo: Joi.string().trim().required().min(5).max(100).messages({
     "string.empty": "El título de la publicación es obligatorio",
     "any.required": "El título de la publicación es obligatorio",
     "string.min": "El título de la publicación debe tener al menos {#limit} caracteres",
     "string.max": "El título de la publicación no puede tener más de {#limit} caracteres",
   }),
-  descripcion: Joi.string().trim().required().min(10).max(2000).messages({
+  descripcion: Joi.when("usoIA", {
+    is: true,
+    then: Joi.any().optional(),
+    otherwise: Joi.string().trim().required().min(10).max(2000),
+  }).messages({
     "string.empty": "La descripción de la publicación es obligatoria",
     "any.required": "La descripción de la publicación es obligatoria",
     "string.min": "La descripción de la publicación debe tener al menos {#limit} caracteres",
@@ -46,17 +53,16 @@ export const createPublicacionSchema = Joi.object({
     "boolean.base": "El campo 'nuevo' debe ser un valor booleano",
     "any.required": "El campo 'nuevo' es obligatorio",
   }),
-  categoria: Joi.string().trim().min(2).max(100).required().messages({
+  categoria: Joi.when("usoIA", {
+    is: true,
+    then: Joi.any().optional(),
+    otherwise: Joi.string().trim().min(2).max(100).required(),
+  }).messages({
     "string.empty": "La categoría es obligatoria",
     "any.required": "La categoría es obligatoria",
   }),
   imagenUrl: Joi.string().uri().optional().messages({
     "string.uri": "La URL de la imagen debe ser una URL válida",
-  }),
-  autor: Joi.string().trim().email().required().messages({
-    "string.email": "El autor debe ser un email válido",
-    "string.empty": "El autor es obligatorio",
-    "any.required": "El autor es obligatorio",
   }),
 });
 
@@ -112,8 +118,5 @@ export const updatePublicacionSchema = Joi.object({
   }),
   imagenUrl: Joi.string().uri().optional().messages({
     "string.uri": "La URL de la imagen debe ser una URL válida",
-  }),
-  autor: Joi.string().trim().email().messages({
-    "string.email": "El autor debe ser un email válido",
   }),
 });
