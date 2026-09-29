@@ -6,6 +6,13 @@ import Categoria from "../models/categoria.model.js";
 import { isValidObjectId } from "mongoose";
 import { sendPublicationReceivedEmail } from "./email.services.js";
 
+const ESTADO_PUBLICACION_ALTA = "Pendiente_Revision";
+const ESTADOS_PUBLICACION_VALIDOS = [
+  "Disponible",
+  "Cancelado",
+  "Pendiente_Revision",
+];
+
 export const obtenerPublicacionesService = async (busqueda = {}) => {
   const publicaciones = await Publicacion.find({ ...busqueda, activa: true });
   return publicaciones;
@@ -44,7 +51,7 @@ export const crearPublicacionService = async (publicacionData) => {
   for (const nombreRol of publicacionData.alcance) {
     const rol = await RolesColeccion.findOne({
       nombre: nombreRol.trim(),
-      activo: true,
+      activa: true,
     });
 
     if (!rol) {
@@ -57,10 +64,12 @@ export const crearPublicacionService = async (publicacionData) => {
   }
 
   const estadoPublicacion = await EstadoPublicacion.findOne({
-    nombre: publicacionData.estadoPublicacion.trim(),
+    nombre: ESTADO_PUBLICACION_ALTA,
   });
   if (!estadoPublicacion) {
-    const error = new Error("El estado de publicación no existe");
+    const error = new Error(
+      `El estado de publicación "${ESTADO_PUBLICACION_ALTA}" no existe`,
+    );
     error.status = 400;
     throw error;
   }
@@ -169,7 +178,7 @@ export const actualizarPublicacionService = async (
     for (const nombreRol of datosActualizados.alcance) {
       const rol = await RolesColeccion.findOne({
         nombre: nombreRol.trim(),
-        activo: true,
+        activa: true,
       });
 
       if (!rol) {
@@ -184,6 +193,14 @@ export const actualizarPublicacionService = async (
   }
 
   if (datosActualizados.estadoPublicacion !== undefined) {
+    if (!ESTADOS_PUBLICACION_VALIDOS.includes(datosActualizados.estadoPublicacion.trim())) {
+      const error = new Error(
+        "El estado de la publicación debe ser Disponible, Cancelado o Pendiente_Revision",
+      );
+      error.status = 400;
+      throw error;
+    }
+
     const estado = await EstadoPublicacion.findOne({
       nombre: datosActualizados.estadoPublicacion.trim(),
     });

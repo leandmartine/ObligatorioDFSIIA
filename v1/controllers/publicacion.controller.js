@@ -5,7 +5,8 @@ import {
   actualizarPublicacionService,
   eliminarPublicacionService,
 } from "../services/publicacion.services.js";
-import { cloudinary } from "../config/cloudinary.js";
+import cloudinary from "../config/cloudinary.js";
+import { uploadBufferToCloudinary } from "../utils/cloudinary.util.js";
 
 export const obtenerPublicaciones = async (req, res) => {
   const busqueda = req.query;
@@ -22,10 +23,16 @@ export const obtenerPublicacionPorId = async (req, res) => {
 export const crearPublicacion = async (req, res) => {
   const publicacionData = { ...req.validatedBody };
 
-  if (publicacionData.imagen) {
-    const resultado = await cloudinary.uploader.upload(publicacionData.imagen);
-    publicacionData.imagen = resultado.secure_url;
+  if (!req.file) {
+    return res.status(400).json({ error: "La imagen de la publicación es obligatoria" });
   }
+
+  const resultado = await uploadBufferToCloudinary(
+    cloudinary,
+    req.file.buffer,
+    { resource_type: "auto", folder: "publicaciones" },
+  );
+  publicacionData.imagenUrl = resultado.secure_url;
 
   const nuevaPublicacion = await crearPublicacionService(publicacionData);
   res.status(201).json({ nuevaPublicacion });
@@ -35,9 +42,13 @@ export const actualizarPublicacion = async (req, res) => {
   const { id } = req.params;
   const publicacionData = { ...req.validatedBody };
 
-  if (publicacionData.imagen) {
-    const resultado = await cloudinary.uploader.upload(publicacionData.imagen);
-    publicacionData.imagen = resultado.secure_url;
+  if (req.file) {
+    const resultado = await uploadBufferToCloudinary(
+      cloudinary,
+      req.file.buffer,
+      { resource_type: "auto", folder: "publicaciones" },
+    );
+    publicacionData.imagenUrl = resultado.secure_url;
   }
 
   const publicacionActualizada = await actualizarPublicacionService(
