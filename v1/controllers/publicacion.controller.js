@@ -7,6 +7,11 @@ import {
 } from "../services/publicacion.services.js";
 import cloudinary from "../config/cloudinary.js";
 import { uploadBufferToCloudinary } from "../utils/cloudinary.util.js";
+import {
+  generarCategoriaConIA,
+  generarDescripcionConIA,
+} from "../services/ai.services.js";
+import { obtenerNombresCategoriasActivasService } from "../services/categoria.services.js";
 
 export const obtenerPublicaciones = async (req, res) => {
   const busqueda = req.query;
@@ -34,7 +39,29 @@ export const crearPublicacion = async (req, res) => {
   );
   publicacionData.imagenUrl = resultado.secure_url;
 
-  const nuevaPublicacion = await crearPublicacionService(publicacionData);
+  if (publicacionData.usoIA) {
+    const categorias = await obtenerNombresCategoriasActivasService();
+    if (categorias.length === 0) {
+      const error = new Error("No hay categorías activas para clasificar la publicación");
+      error.status = 503;
+      throw error;
+    }
+
+    publicacionData.descripcion = await generarDescripcionConIA(
+      publicacionData.titulo,
+    );
+    publicacionData.categoria = await generarCategoriaConIA(
+      publicacionData.titulo,
+      categorias,
+      publicacionData.categoria,
+    );
+  }
+
+  delete publicacionData.usoIA;
+  const nuevaPublicacion = await crearPublicacionService(
+    publicacionData,
+    req.user.email,
+  );
   res.status(201).json({ nuevaPublicacion });
 };
 

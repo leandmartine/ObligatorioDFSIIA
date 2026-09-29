@@ -8,6 +8,11 @@ export const obtenerCategoriasService = async (busqueda = {}) => {
   return categorias;
 };
 
+export const obtenerNombresCategoriasActivasService = async () => {
+  const categorias = await Categoria.find({ activa: true }, "nombre");
+  return categorias.map((categoria) => categoria.nombre);
+};
+
 export const obtenerCategoriaService = async (id) => {
   if (!isValidObjectId(id)) {
     const errorId = new Error("El id de la categoría no es válido");
