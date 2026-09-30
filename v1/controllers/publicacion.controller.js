@@ -4,6 +4,8 @@ import {
   crearPublicacionService,
   actualizarPublicacionService,
   eliminarPublicacionService,
+  obtenerPublicacionesPendientesService,
+  moderarPublicacionService,
 } from "../services/publicacion.services.js";
 import cloudinary from "../config/cloudinary.js";
 import { uploadBufferToCloudinary } from "../utils/cloudinary.util.js";
@@ -22,6 +24,20 @@ export const obtenerPublicaciones = async (req, res) => {
 export const obtenerPublicacionPorId = async (req, res) => {
   const { id } = req.params;
   const publicacion = await obtenerPublicacionService(id);
+  res.status(200).json({ publicacion });
+};
+
+export const obtenerPublicacionesPendientes = async (req, res) => {
+  const publicaciones = await obtenerPublicacionesPendientesService(req.user);
+  res.status(200).json({ publicaciones });
+};
+
+export const moderarPublicacion = async (req, res) => {
+  const publicacion = await moderarPublicacionService(
+    req.params.id,
+    req.validatedBody.decision,
+    req.user,
+  );
   res.status(200).json({ publicacion });
 };
 

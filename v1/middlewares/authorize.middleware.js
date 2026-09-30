@@ -16,3 +16,11 @@ export const authorizeAdmin = (req, res, next) => {
 
   next();
 };
+
+export const authorizeModerator = (req, res, next) => {
+  if (req.user?.puedeModerar !== true) {
+    return res.status(403).json({ message: "Solo un moderador puede realizar esta acción" });
+  }
+
+  next();
+};

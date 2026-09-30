@@ -7,8 +7,8 @@ const router = express.Router({mergeParams:true});
 router.get("/", obtenerUsuarios);
 router.get("/:id", obtenerUsuarioPorId);
 router.post("/", validateBodyMiddleware(createUsuarioSchema), crearUsuario);
-router.put("/alta/:id", validateBodyMiddleware(altaUsuarioPremiumSchema), altaUsuarioPremium);
-router.put("/:id", validateBodyMiddleware(updateUsuarioSchema), actualizarUsuario);
+router.patch("/altaPremium/:id", validateBodyMiddleware(altaUsuarioPremiumSchema), altaUsuarioPremium);
+router.patch("/:id", validateBodyMiddleware(updateUsuarioSchema), actualizarUsuario);
 router.delete("/:id", eliminarUsuario);
 
 export default router;
