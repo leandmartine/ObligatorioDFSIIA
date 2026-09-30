@@ -20,4 +20,4 @@ const rolesSchema = new mongoose.Schema(
   { timestamps: true, collection: "roles" },
 );
 
-export default mongoose.model("RolesColeccion", rolesSchema);
+export default mongoose.model("roles", rolesSchema);

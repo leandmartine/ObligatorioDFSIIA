@@ -9,8 +9,8 @@ const router = express.Router({mergeParams:true});
 
 router.get("/", obtenerCategorias);
 router.get("/:id", obtenerCategoriaPorId);
-router.post("/", validateBodyMiddleware(createCategoriaSchema), crearCategoria);
-router.put("/:id",authorizeAdmin,validateBodyMiddleware(updateCategoriaSchema),actualizarCategoria);
+router.post("/", authorizeAdmin, validateBodyMiddleware(createCategoriaSchema), crearCategoria);
+router.patch("/:id",authorizeAdmin,validateBodyMiddleware(updateCategoriaSchema),actualizarCategoria);
 router.delete("/:id", authorizeAdmin, eliminarCategoria);
 
 export default router;

@@ -6,12 +6,9 @@ import Categoria from "../models/categoria.model.js";
 import { isValidObjectId } from "mongoose";
 import { sendPublicationReceivedEmail } from "./email.services.js";
 
-const ESTADO_PUBLICACION_ALTA = "Pendiente_Revision";
-const ESTADOS_PUBLICACION_VALIDOS = [
-  "Disponible",
-  "Cancelado",
-  "Pendiente_Revision",
-];
+const ESTADO_PUBLICACION_DISPONIBLE = "Disponible";
+const ESTADO_PUBLICACION_CANCELADO = "Cancelado";
+const ESTADO_PUBLICACION_PENDIENTE = "Pendiente_Revision";
 
 export const obtenerPublicacionesService = async (busqueda = {}) => {
   const publicaciones = await Publicacion.find({ ...busqueda, activa: true });
@@ -69,13 +66,12 @@ export const crearPublicacionService = async (publicacionData, autorEmail) => {
     alcance.push(rol._id);
   }
 
-  const estadoPublicacion = await EstadoPublicacion.findOne({
-    nombre: ESTADO_PUBLICACION_ALTA,
-  });
+  const nombreEstadoAlta = usuario.esPremium
+    ? ESTADO_PUBLICACION_DISPONIBLE
+    : ESTADO_PUBLICACION_PENDIENTE;
+  const estadoPublicacion = await EstadoPublicacion.findOne({ nombre: nombreEstadoAlta });
   if (!estadoPublicacion) {
-    const error = new Error(
-      `El estado de publicación "${ESTADO_PUBLICACION_ALTA}" no existe`,
-    );
+    const error = new Error(`El estado de publicación "${nombreEstadoAlta}" no existe`);
     error.status = 400;
     throw error;
   }
@@ -91,14 +87,25 @@ export const crearPublicacionService = async (publicacionData, autorEmail) => {
   }
 
   if (!usuario.esPremium) {
-    const publicacionesActivas = await Publicacion.countDocuments({
+    const estadoCancelado = await EstadoPublicacion.findOne({
+      nombre: ESTADO_PUBLICACION_CANCELADO,
+    });
+    if (!estadoCancelado) {
+      const error = new Error(
+        `El estado de publicación "${ESTADO_PUBLICACION_CANCELADO}" no existe`,
+      );
+      error.status = 400;
+      throw error;
+    }
+
+    const publicacionesNoCanceladas = await Publicacion.countDocuments({
       autor: usuario._id,
-      activa: true,
+      estadoPublicacion: { $ne: estadoCancelado._id },
     });
 
-    if (publicacionesActivas >= LIMITE_PUBLICACIONES_NO_PREMIUM) {
+    if (publicacionesNoCanceladas >= LIMITE_PUBLICACIONES_NO_PREMIUM) {
       const error = new Error(
-        "Los usuarios no premium pueden tener hasta 4 publicaciones activas"
+        "Los usuarios plus pueden tener hasta 4 publicaciones no canceladas",
       );
       error.status = 403;
       throw error;
@@ -111,6 +118,7 @@ export const crearPublicacionService = async (publicacionData, autorEmail) => {
     alcance,
     estadoPublicacion: estadoPublicacion._id,
     categoria: categoria._id,
+    activa: usuario.esPremium,
   });
   await nuevaPublicacion.save();
 
@@ -198,26 +206,6 @@ export const actualizarPublicacionService = async (
     datosActualizados.alcance = alcance;
   }
 
-  if (datosActualizados.estadoPublicacion !== undefined) {
-    if (!ESTADOS_PUBLICACION_VALIDOS.includes(datosActualizados.estadoPublicacion.trim())) {
-      const error = new Error(
-        "El estado de la publicación debe ser Disponible, Cancelado o Pendiente_Revision",
-      );
-      error.status = 400;
-      throw error;
-    }
-
-    const estado = await EstadoPublicacion.findOne({
-      nombre: datosActualizados.estadoPublicacion.trim(),
-    });
-    if (!estado) {
-      const error = new Error("El estado de publicación no existe");
-      error.status = 400;
-      throw error;
-    }
-    datosActualizados.estadoPublicacion = estado._id;
-  }
-
   if (datosActualizados.categoria !== undefined) {
     const categoria = await Categoria.findOne({
       nombre: datosActualizados.categoria.trim(),
@@ -242,6 +230,62 @@ export const actualizarPublicacionService = async (
     throw errorNotFound;
   }
   return publicacionActualizada;
+};
+
+export const obtenerPublicacionesPendientesService = async (usuarioSolicitante) => {
+  const estadoPendiente = await EstadoPublicacion.findOne({
+    nombre: ESTADO_PUBLICACION_PENDIENTE,
+  });
+  if (!estadoPendiente) {
+    const error = new Error(`El estado de publicación "${ESTADO_PUBLICACION_PENDIENTE}" no existe`);
+    error.status = 400;
+    throw error;
+  }
+
+  return Publicacion.find({
+    estadoPublicacion: estadoPendiente._id,
+    activa: false,
+  });
+};
+
+export const moderarPublicacionService = async (id, decision, usuarioSolicitante) => {
+  if (!isValidObjectId(id)) {
+    const errorId = new Error("El id de la publicación no es válido");
+    errorId.status = 400;
+    throw errorId;
+  }
+
+  const publicacion = await Publicacion.findById(id);
+  if (!publicacion) {
+    const errorNotFound = new Error("Publicación no encontrada");
+    errorNotFound.status = 404;
+    throw errorNotFound;
+  }
+
+  const estadoPendiente = await EstadoPublicacion.findOne({
+    nombre: ESTADO_PUBLICACION_PENDIENTE,
+  });
+  const estadoResultado = await EstadoPublicacion.findOne({
+    nombre: decision === "aprobar"
+      ? ESTADO_PUBLICACION_DISPONIBLE
+      : ESTADO_PUBLICACION_CANCELADO,
+  });
+  if (!estadoPendiente || !estadoResultado) {
+    const error = new Error("No están configurados todos los estados de publicación requeridos");
+    error.status = 400;
+    throw error;
+  }
+
+  if (String(publicacion.estadoPublicacion) !== String(estadoPendiente._id)) {
+    const errorEstado = new Error("Solo se pueden moderar publicaciones pendientes de revisión");
+    errorEstado.status = 409;
+    throw errorEstado;
+  }
+
+  publicacion.estadoPublicacion = estadoResultado._id;
+  publicacion.activa = decision === "aprobar";
+  await publicacion.save();
+  return publicacion;
 };
 
 export const eliminarPublicacionService = async (id, usuarioSolicitante) => {

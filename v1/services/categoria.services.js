@@ -35,7 +35,7 @@ export const crearCategoriaService = async (categoriaData) => {
   for (const nombreRol of categoriaData.rolesPermitidos) {
     const rol = await RolesColeccion.findOne({
       nombre: nombreRol.trim(),
-      activo: true,
+      activa: true,
     });
 
     if (!rol) {
@@ -69,7 +69,7 @@ export const actualizarCategoriaService = async (id, categoriaData) => {
     for (const nombreRol of datosActualizados.rolesPermitidos) {
       const rol = await RolesColeccion.findOne({
         nombre: nombreRol.trim(),
-        activo: true,
+        activa: true,
       });
 
       if (!rol) {

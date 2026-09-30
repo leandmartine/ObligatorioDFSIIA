@@ -43,11 +43,6 @@ export const updateUsuarioSchema = Joi.object({
     "string.min": "El nombre debe tener al menos {#limit} caracteres",
     "string.max": "El nombre no puede tener más de {#limit} caracteres",
   }),
-  email: Joi.string().email().required().messages({
-    "string.email": "El email debe ser una dirección de correo válida",
-    "string.empty": "El email es obligatorio",
-    "any.required": "El email es obligatorio",
-  }),
   password: Joi.string().min(6).messages({
     "string.min": "La contraseña debe tener al menos {#limit} caracteres",
   }),

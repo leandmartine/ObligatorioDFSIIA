@@ -46,7 +46,7 @@ export const obtenerUsuarioService = async (id) => {
 export const crearUsuarioService = async (usuarioData) => {
     const rol = await RolesColeccion.findOne({
         nombre: usuarioData.role.trim(),
-        activo: true,
+        activa: true,
     });
     if (!rol) {
         const errorNotFound = new Error("El rol no existe o está inactivo");
@@ -69,18 +69,26 @@ export const actualizarUsuarioService = async (id, usuarioData, usuarioSolicitan
         throw errorId;
     }
 
-    const usuario = await Usuario.findById(id);
+    const usuario = await Usuario.findOne({
+        email: usuarioSolicitante?.email,
+        activo: true,
+    });
     if (!usuario) {
         const errorNotFound = new Error("Usuario no encontrado");
         errorNotFound.status = 404;
         throw errorNotFound;
     }
-    validarPermisoSobreUsuario(usuario, usuarioSolicitante);
+
+    if (usuario._id.toString() !== id) {
+        const errorPermiso = new Error("No es posible realizar la acción sobre otro usuario");
+        errorPermiso.status = 403;
+        throw errorPermiso;
+    }
 
     if (usuarioData.role !== undefined) {
         const rol = await RolesColeccion.findOne({
             nombre: usuarioData.role.trim(),
-            activo: true,
+            activa: true,
         });
         if (!rol) {
             const errorNotFound = new Error("El rol no existe o está inactivo");
@@ -90,7 +98,7 @@ export const actualizarUsuarioService = async (id, usuarioData, usuarioSolicitan
         usuarioData = { ...usuarioData, role: rol._id };
     }
 
-    const usuarioActualizado = await Usuario.findByIdAndUpdate(id,
+    const usuarioActualizado = await Usuario.findByIdAndUpdate(usuario._id,
         usuarioData, { returnDocument: "after" });
     return usuarioActualizado;
 }

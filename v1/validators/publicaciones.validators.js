@@ -102,21 +102,18 @@ export const updatePublicacionSchema = Joi.object({
   nuevo: Joi.boolean().messages({
     "boolean.base": "El campo 'nuevo' debe ser un valor booleano",
   }),
-  estadoPublicacion: Joi.string()
-    .trim()
-    .valid("Disponible", "Cancelado", "Pendiente_Revision")
-    .required()
-    .messages({
-      "any.only":
-        "El estado de la publicación debe ser Disponible, Cancelado o Pendiente_Revision",
-      "string.empty": "El estado de la publicación es obligatorio",
-      "any.required": "El estado de la publicación es obligatorio",
-    }),
   categoria: Joi.string().trim().min(2).max(100).messages({
     "string.min": "La categoría debe tener al menos {#limit} caracteres",
     "string.max": "La categoría no puede tener más de {#limit} caracteres",
   }),
   imagenUrl: Joi.string().uri().optional().messages({
     "string.uri": "La URL de la imagen debe ser una URL válida",
+  }),
+});
+
+export const moderarPublicacionSchema = Joi.object({
+  decision: Joi.string().valid("aprobar", "rechazar").required().messages({
+    "any.only": "La decisión debe ser aprobar o rechazar",
+    "any.required": "La decisión de moderación es obligatoria",
   }),
 });
