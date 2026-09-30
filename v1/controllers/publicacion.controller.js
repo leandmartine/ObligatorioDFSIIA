@@ -16,9 +16,8 @@ import {
 import { obtenerNombresCategoriasActivasService } from "../services/categoria.services.js";
 
 export const obtenerPublicaciones = async (req, res) => {
-  const busqueda = req.query;
-  const publicaciones = await obtenerPublicacionesService(busqueda);
-  res.status(200).json({ publicaciones });
+  const resultado = await obtenerPublicacionesService(req.query);
+  res.status(200).json(resultado);
 };
 
 export const obtenerPublicacionPorId = async (req, res) => {

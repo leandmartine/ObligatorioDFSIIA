@@ -9,10 +9,31 @@ import { sendPublicationReceivedEmail } from "./email.services.js";
 const ESTADO_PUBLICACION_DISPONIBLE = "Disponible";
 const ESTADO_PUBLICACION_CANCELADO = "Cancelado";
 const ESTADO_PUBLICACION_PENDIENTE = "Pendiente_Revision";
+const PUBLICACIONES_POR_PAGINA = 12;
 
 export const obtenerPublicacionesService = async (busqueda = {}) => {
-  const publicaciones = await Publicacion.find({ ...busqueda, activa: true });
-  return publicaciones;
+  const filtros = { ...busqueda };
+  const paginaPedida = Number.parseInt(filtros.page, 10);
+  const page = Number.isInteger(paginaPedida) && paginaPedida > 0 ? paginaPedida : 1;
+  delete filtros.page;
+  delete filtros.limit;
+
+  const limit = PUBLICACIONES_POR_PAGINA;
+  const skip = (page - 1) * limit;
+  const filtro = { ...filtros, activa: true };
+
+  const [publicaciones, total] = await Promise.all([
+    Publicacion.find(filtro).sort({ createdAt: -1, _id: -1 }).skip(skip).limit(limit),
+    Publicacion.countDocuments(filtro),
+  ]);
+
+  return {
+    publicaciones,
+    page,
+    limit,
+    total,
+    totalPaginas: Math.ceil(total / limit),
+  };
 };
 
 export const obtenerPublicacionService = async (id) => {
