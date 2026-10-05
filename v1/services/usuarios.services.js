@@ -54,6 +54,27 @@ export const obtenerUsuarioService = async (id) => {
   return usuario;
 }
 
+export const obtenerPublicacionesDelUsuarioService = async (email) => {
+    if (!email) {
+        const errorToken = new Error("El token no contiene el email del usuario");
+        errorToken.status = 401;
+        throw errorToken;
+    }
+
+    const usuario = await Usuario.findOne(
+        { email, activo: true },
+        "publicaciones",
+    ).populate("publicaciones");
+
+    if (!usuario) {
+        const errorNotFound = new Error("Usuario no encontrado");
+        errorNotFound.status = 404;
+        throw errorNotFound;
+    }
+
+    return usuario.publicaciones;
+}
+
 export const crearUsuarioService = async (usuarioData) => {
     const rol = await RolesColeccion.findOne({
         nombre: usuarioData.role.trim(),
