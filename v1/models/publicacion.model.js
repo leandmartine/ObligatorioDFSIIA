@@ -22,11 +22,13 @@ const publicacionSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
   },
-  alcance: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "roles",
-    required: true,
-  }],
+  alcance: {
+    type: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "roles",
+      required: true,
+    }],
+  },
   cantidad: {
     type: Number,
     required: true,

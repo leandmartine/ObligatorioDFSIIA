@@ -16,8 +16,9 @@ export const createCategoriaSchema = Joi.object({
       "string.min": "Cada rol permitido debe tener al menos {#limit} caracteres",
       "string.max": "Cada rol permitido no puede tener más de {#limit} caracteres",
     }),
-  ).min(1).required().messages({
+  ).unique().min(1).required().messages({
     "array.base": "Los roles permitidos deben ser un arreglo de nombres",
+    "array.unique": "No se puede repetir un rol permitido",
     "array.min": "Debe indicar al menos un rol permitido",
     "any.required": "Los roles permitidos son obligatorios",
   }),
@@ -38,8 +39,9 @@ export const updateCategoriaSchema = Joi.object({
       "string.min": "Cada rol permitido debe tener al menos {#limit} caracteres",
       "string.max": "Cada rol permitido no puede tener más de {#limit} caracteres",
     }),
-  ).min(1).messages({
+  ).unique().min(1).messages({
     "array.base": "Los roles permitidos deben ser un arreglo de nombres",
+    "array.unique": "No se puede repetir un rol permitido",
     "array.min": "Debe indicar al menos un rol permitido",
   }),
 });
