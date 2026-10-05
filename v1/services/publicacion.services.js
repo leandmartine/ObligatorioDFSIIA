@@ -71,7 +71,7 @@ export const crearPublicacionService = async (publicacionData, autorEmail) => {
     throw error;
   }
 
-  const alcance = [];
+  const alcance = new Map();
   for (const nombreRol of publicacionData.alcance) {
     const rol = await RolesColeccion.findOne({
       nombre: nombreRol.trim(),
@@ -84,7 +84,7 @@ export const crearPublicacionService = async (publicacionData, autorEmail) => {
       throw error;
     }
 
-    alcance.push(rol._id);
+    alcance.set(rol._id.toString(), rol._id);
   }
 
   const nombreEstadoAlta = usuario.esPremium
@@ -136,7 +136,7 @@ export const crearPublicacionService = async (publicacionData, autorEmail) => {
   const nuevaPublicacion = new Publicacion({
     ...publicacionData,
     autor: usuario._id,
-    alcance,
+    alcance: [...alcance.values()],
     estadoPublicacion: estadoPublicacion._id,
     categoria: categoria._id,
     activa: usuario.esPremium,
@@ -213,7 +213,7 @@ export const actualizarPublicacionService = async (
   const datosActualizados = { ...publicacionData };
 
   if (datosActualizados.alcance) {
-    const alcance = [];
+    const alcance = new Map();
     for (const nombreRol of datosActualizados.alcance) {
       const rol = await RolesColeccion.findOne({
         nombre: nombreRol.trim(),
@@ -226,9 +226,9 @@ export const actualizarPublicacionService = async (
         throw error;
       }
 
-      alcance.push(rol._id);
+      alcance.set(rol._id.toString(), rol._id);
     }
-    datosActualizados.alcance = alcance;
+    datosActualizados.alcance = [...alcance.values()];
   }
 
   if (datosActualizados.categoria !== undefined) {
