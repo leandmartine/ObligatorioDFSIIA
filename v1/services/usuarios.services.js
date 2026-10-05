@@ -151,17 +151,26 @@ export const eliminarUsuarioService = async (id, usuarioSolicitante) => {
 
     validarPermisoSobreUsuario(usuario, usuarioSolicitante);
 
-    const publicacionesActivas = await Publicacion.countDocuments({
-        autor: id,
-        activa: true,
+    const estadoCancelado = await EstadoPublicacion.findOne({
+        nombre: "Cancelado",
     });
-    if (publicacionesActivas > 0) {
-        const errorPublicacionesActivas = new Error(
-            "No es posible dar de baja al usuario porque tiene publicaciones activas",
+    if (!estadoCancelado) {
+        const errorEstado = new Error(
+            'El estado de publicación "Cancelado" no existe',
         );
-        errorPublicacionesActivas.status = 409;
-        throw errorPublicacionesActivas;
+        errorEstado.status = 400;
+        throw errorEstado;
     }
+
+    await Publicacion.updateMany(
+        { autor: id },
+        {
+            $set: {
+                estadoPublicacion: estadoCancelado._id,
+                activa: false,
+            },
+        },
+    );
 
     usuario.activo = false;
     usuario.email = `${usuario.email}${obtenerMarcaDeBaja()}`;
