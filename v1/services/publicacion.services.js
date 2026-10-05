@@ -143,6 +143,10 @@ export const crearPublicacionService = async (publicacionData, autorEmail) => {
   });
   await nuevaPublicacion.save();
 
+  await Usuario.findByIdAndUpdate(usuario._id, {
+    $addToSet: { publicaciones: nuevaPublicacion._id },
+  });
+
   await sendPublicationReceivedEmail({
     name: usuario.name,
     email: usuario.email,
@@ -327,5 +331,10 @@ export const eliminarPublicacionService = async (id, usuarioSolicitante) => {
 
   publicacion.activa = false;
   await publicacion.save();
+
+  await Usuario.findByIdAndUpdate(publicacion.autor, {
+    $pull: { publicaciones: publicacion._id },
+  });
+
   return publicacion;
 };
