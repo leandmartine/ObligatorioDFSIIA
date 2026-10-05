@@ -38,7 +38,7 @@ export const login = async (req, res, next) => {
 export const register = async (req, res) => {
   const { name, phone, email, password, esAdmin, puedeModerar, role } =
     req.validatedBody;
-  const userFound = await Usuario.findOne({ email });
+  const userFound = await Usuario.findOne({ email, activo: true });
   if (userFound) {
     return res.status(409).json({ message: "El email ya está en uso" });
   }
