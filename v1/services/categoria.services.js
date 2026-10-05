@@ -30,7 +30,7 @@ export const obtenerCategoriaService = async (id) => {
 };
 
 export const crearCategoriaService = async (categoriaData) => {
-  const rolesPermitidos = [];
+  const rolesPermitidos = new Map();
 
   for (const nombreRol of categoriaData.rolesPermitidos) {
     const rol = await RolesColeccion.findOne({
@@ -44,12 +44,12 @@ export const crearCategoriaService = async (categoriaData) => {
       throw error;
     }
 
-    rolesPermitidos.push(rol._id);
+    rolesPermitidos.set(rol._id.toString(), rol._id);
   }
 
   const nuevaCategoria = new Categoria({
     ...categoriaData,
-    rolesPermitidos,
+    rolesPermitidos: [...rolesPermitidos.values()],
   });
   await nuevaCategoria.save();
   return nuevaCategoria;
@@ -65,7 +65,7 @@ export const actualizarCategoriaService = async (id, categoriaData) => {
   const datosActualizados = { ...categoriaData };
 
   if (datosActualizados.rolesPermitidos !== undefined) {
-    const rolesPermitidos = [];
+    const rolesPermitidos = new Map();
     for (const nombreRol of datosActualizados.rolesPermitidos) {
       const rol = await RolesColeccion.findOne({
         nombre: nombreRol.trim(),
@@ -78,9 +78,9 @@ export const actualizarCategoriaService = async (id, categoriaData) => {
         throw error;
       }
 
-      rolesPermitidos.push(rol._id);
+      rolesPermitidos.set(rol._id.toString(), rol._id);
     }
-    datosActualizados.rolesPermitidos = rolesPermitidos;
+    datosActualizados.rolesPermitidos = [...rolesPermitidos.values()];
   }
 
   const categoriaActualizada = await Categoria.findOneAndUpdate(
