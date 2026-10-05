@@ -9,11 +9,13 @@ const categoriaSchema = new mongoose.Schema({
   descripcion: {
     type: String,
   },
-  rolesPermitidos: [{
-    type: mongoose.Schema.Types.Array,
-    ref: "roles",
-    required: true,
-  }],
+  rolesPermitidos: {
+    type: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "roles",
+      required: true,
+    }],
+  },
   activa: {
     type: Boolean,
     default: true,

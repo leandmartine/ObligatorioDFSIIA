@@ -39,8 +39,9 @@ export const createPublicacionSchema = Joi.object({
       "string.min": "Cada alcance debe tener al menos {#limit} caracteres",
       "string.max": "Cada alcance no puede tener más de {#limit} caracteres",
     }),
-  ).min(1).required().messages({
+  ).unique().min(1).required().messages({
     "array.base": "El alcance debe ser un arreglo de nombres",
+    "array.unique": "No se puede repetir un rol en el alcance",
     "array.min": "Debe indicar al menos un alcance",
     "any.required": "El alcance es obligatorio",
   }),
@@ -91,8 +92,9 @@ export const updatePublicacionSchema = Joi.object({
       "string.min": "Cada alcance debe tener al menos {#limit} caracteres",
       "string.max": "Cada alcance no puede tener más de {#limit} caracteres",
     }),
-  ).min(1).messages({
+  ).unique().min(1).messages({
     "array.base": "El alcance debe ser un arreglo de nombres",
+    "array.unique": "No se puede repetir un rol en el alcance",
     "array.min": "Debe indicar al menos un alcance",
   }),
   cantidad: Joi.number().integer().min(1).messages({
