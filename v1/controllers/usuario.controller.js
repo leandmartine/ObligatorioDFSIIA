@@ -1,5 +1,11 @@
-import {obtenerUsuariosService, crearUsuarioService, obtenerUsuarioService, 
-    actualizarUsuarioService, eliminarUsuarioService} from "../services/usuarios.services.js";
+import {
+    obtenerUsuariosService,
+    crearUsuarioService,
+    obtenerUsuarioService,
+    obtenerPublicacionesDelUsuarioService,
+    actualizarUsuarioService,
+    eliminarUsuarioService,
+} from "../services/usuarios.services.js";
 
 export const obtenerUsuarios = async (req, res) => {
     const busqueda = req.query;
@@ -11,6 +17,11 @@ export const obtenerUsuarioPorId = async (req, res) => {
     const { id } = req.params;
     const usuario = await obtenerUsuarioService(id);
     res.status(200).json({ usuario });
+}
+
+export const obtenerPublicacionesDelUsuario = async (req, res) => {
+    const publicaciones = await obtenerPublicacionesDelUsuarioService(req.user?.email);
+    res.status(200).json({ publicaciones });
 }
 
 export const crearUsuario = async (req, res) => {
