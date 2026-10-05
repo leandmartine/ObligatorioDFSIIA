@@ -14,6 +14,17 @@ const validarPermisoSobreUsuario = (usuario, usuarioSolicitante) => {
     }
 };
 
+const obtenerMarcaDeBaja = () => {
+    const ahora = new Date();
+    const año = ahora.getFullYear();
+    const mes = String(ahora.getMonth() + 1).padStart(2, "0");
+    const dia = String(ahora.getDate()).padStart(2, "0");
+    const hora = String(ahora.getHours()).padStart(2, "0");
+    const minutos = String(ahora.getMinutes()).padStart(2, "0");
+
+    return `${año}${mes}${dia}${hora}${minutos}`;
+};
+
 export const obtenerUsuariosService = async (busqueda = {}) => {
     const usuarios = await Usuario.find(
         { ...busqueda, activo: true },
@@ -132,6 +143,7 @@ export const eliminarUsuarioService = async (id, usuarioSolicitante) => {
     }
 
     usuario.activo = false;
+    usuario.email = `${usuario.email}${obtenerMarcaDeBaja()}`;
     await usuario.save();
     return usuario;
 }
