@@ -8,7 +8,7 @@ export const login = async (req, res, next) => {
   const { email, password } = req.validatedBody;
   const userFound = await Usuario.findOne(
     { email, activo: true },
-    "email esAdmin puedeModerar role +password",
+    "name email esAdmin esPremium puedeModerar role +password",
   );
   if (!userFound) {
     return res
@@ -24,8 +24,11 @@ export const login = async (req, res, next) => {
 
   const token = jwt.sign(
     {
+      id: userFound._id,
+      name: userFound.name,
       email,
       esAdmin: userFound.esAdmin,
+      esPremium: userFound.esPremium ?? false,
       puedeModerar: userFound.puedeModerar ?? false,
       role: userFound.role,
     },
@@ -70,8 +73,11 @@ export const register = async (req, res) => {
 
   const token = jwt.sign(
     {
+      id: usuarioCreado._id,
+      name: usuarioCreado.name,
       email,
       esAdmin,
+      esPremium: usuarioCreado.esPremium ?? false,
       puedeModerar: puedeModerar ?? false,
       role: roleFound._id,
     },
@@ -80,4 +86,9 @@ export const register = async (req, res) => {
   );
   return res.status(201)
     .json({ message: "Usuario registrado exitosamente", token });
+};
+
+export const obtenerRoles = async (req, res) => {
+  const roles = await RolesColeccion.find({ activa: true }, "nombre descripcion");
+  return res.status(200).json({ roles });
 };

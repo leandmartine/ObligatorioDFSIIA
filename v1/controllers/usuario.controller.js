@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import {
     obtenerUsuariosService,
     crearUsuarioService,
@@ -41,7 +42,20 @@ export const altaUsuarioPremium = async (req, res) => {
     const { id } = req.params;
     const usuarioData = { esPremium: true };
     const usuarioActualizado = await actualizarUsuarioService(id, usuarioData, req.user);
-    res.status(200).json({ usuarioActualizado });
+    const token = jwt.sign(
+        {
+            id: usuarioActualizado._id,
+            name: usuarioActualizado.name,
+            email: usuarioActualizado.email,
+            esAdmin: usuarioActualizado.esAdmin,
+            esPremium: usuarioActualizado.esPremium ?? true,
+            puedeModerar: usuarioActualizado.puedeModerar ?? false,
+            role: usuarioActualizado.role,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "12h" },
+    );
+    res.status(200).json({ usuarioActualizado, token });
 } 
 
 export const eliminarUsuario = async (req, res) => {

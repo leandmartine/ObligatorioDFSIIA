@@ -329,6 +329,12 @@ export const eliminarPublicacionService = async (id, usuarioSolicitante) => {
 
   await validarPermisoSobrePublicacion(publicacion, usuarioSolicitante, "eliminar");
 
+  const estadoCancelado = await EstadoPublicacion.findOne({
+    nombre: ESTADO_PUBLICACION_CANCELADO,
+  });
+  if (estadoCancelado) {
+    publicacion.estadoPublicacion = estadoCancelado._id;
+  }
   publicacion.activa = false;
   await publicacion.save();
 
