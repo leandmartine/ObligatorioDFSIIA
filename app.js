@@ -8,7 +8,7 @@ import { errorMiddleware } from "./v1/middlewares/error.middleware.js";
 import rateLimit from 'express-rate-limit';
 
 
-connectDB();
+connectDB().catch(() => {});
 
 const app = express();
 app.use(cors());
@@ -20,7 +20,14 @@ app.get("/", (req, res) => {
     res.send("Nueva respuesta desde el servidor");
 })
 
-app.use("/v1", v1 );
+app.use("/v1", async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        next(error);
+    }
+}, v1 );
 
 app.use(notFoundMiddleware);
 
