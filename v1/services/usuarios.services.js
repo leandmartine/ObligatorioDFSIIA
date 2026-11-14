@@ -1,6 +1,8 @@
+import bcrypt from "bcryptjs";
 import Usuario from "../models/usuario.model.js";
 import Publicacion from "../models/publicacion.model.js";
 import RolesColeccion from "../models/roles.model.js";
+import EstadoPublicacion from "../models/estadoPublicacion.model.js";
 import { isValidObjectId } from "mongoose";
 
 const validarPermisoSobreUsuario = (usuario, usuarioSolicitante) => {
@@ -86,8 +88,14 @@ export const crearUsuarioService = async (usuarioData) => {
         throw errorNotFound;
     }
 
+    const hashedPassword = bcrypt.hashSync(
+        usuarioData.password,
+        Number(process.env.SALTING_ROUNDS),
+    );
+
     const nuevoUsuario = new Usuario({
         ...usuarioData,
+        password: hashedPassword,
         role: rol._id,
     });
     await nuevoUsuario.save();
@@ -102,7 +110,7 @@ export const actualizarUsuarioService = async (id, usuarioData, usuarioSolicitan
     }
 
     const usuario = await Usuario.findOne({
-        email: usuarioSolicitante?.email,
+        _id: id,
         activo: true,
     });
     if (!usuario) {
@@ -111,11 +119,7 @@ export const actualizarUsuarioService = async (id, usuarioData, usuarioSolicitan
         throw errorNotFound;
     }
 
-    if (usuario._id.toString() !== id) {
-        const errorPermiso = new Error("No es posible realizar la acción sobre otro usuario");
-        errorPermiso.status = 403;
-        throw errorPermiso;
-    }
+    validarPermisoSobreUsuario(usuario, usuarioSolicitante);
 
     if (usuarioData.role !== undefined) {
         const rol = await RolesColeccion.findOne({
@@ -128,6 +132,14 @@ export const actualizarUsuarioService = async (id, usuarioData, usuarioSolicitan
             throw errorNotFound;
         }
         usuarioData = { ...usuarioData, role: rol._id };
+    }
+
+    if (usuarioData.password !== undefined) {
+        const hashedPassword = bcrypt.hashSync(
+            usuarioData.password,
+            Number(process.env.SALTING_ROUNDS),
+        );
+        usuarioData = { ...usuarioData, password: hashedPassword };
     }
 
     const usuarioActualizado = await Usuario.findByIdAndUpdate(usuario._id,
